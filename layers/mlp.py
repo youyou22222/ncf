@@ -3,7 +3,6 @@ from tensorflow.keras.layers import Layer
 from tensorflow.keras.layers import Embedding
 
 
-
 class MlpLayer(Layer):
     def __init__(self, n_user, n_items, n_factors, layer_size, name="mlp_layer"):
         """
