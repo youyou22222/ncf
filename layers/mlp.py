@@ -35,8 +35,8 @@ class MlpLayer(Layer):
         user_latent = self.embedding_mlp_user(user_input)
         item_latent = self.embedding_mlp_item(item_input)
         layer = tf.concat([user_latent, item_latent], axis=1)
-        for dim in self.layer_size:
-            layer = tf.keras.layers.Dense(dim, activation='relu')(layer)
+        for i, dim in enumerate(self.layer_size):
+            layer = tf.keras.layers.Dense(dim, activation='relu', name="layer_%d"%i)(layer)
         return layer
 
 

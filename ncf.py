@@ -11,7 +11,10 @@ from tensorflow.keras.layers import Embedding
 from layers import GMFLayer, MlpLayer
 
 class Ncf(Model):
-    def __init__(self, n_user, n_items, n_factors, layer_size, name="ncf"):
+    def __init__(self, n_user, n_items, n_factors,
+                 layer_size, name="neumf",
+                 gmf_trainable=True, mlp_trainable=True,
+                 gmf_pretrain=None, mlp_pretrain=None):
         """
         args
         param n_user: Number of users in Dataset
@@ -26,34 +29,65 @@ class Ncf(Model):
         self.n_factors = n_factors
         self.layer_size = layer_size
         self.model_name = name
+        self.gmf_trainable = gmf_trainable
+        self.mlp_trainable = mlp_trainable
+        self.gmf_pretrain = gmf_pretrain
+        self.mlp_pretrain = mlp_pretrain
+
+        model_options = ["gmf", "mlp", "neumf"]
+        if self.model_name not in model_options:
+            raise ValueError(
+                "The argument model is invalid, please input one of the following options: gmf, mlp, neumf")
+
+        if name == "gmf":
+            self.gmf = GMFLayer(self.n_user, self.n_items, self.n_factors)
+            if self.gmf_pretrain:
+                self.gmf.set_weights(self.gmf_pretrain)
+        if name == "mlp":
+            self.mlp = MlpLayer(self.n_user, self.n_items, self.n_factors, self.layer_size)
+            if self.mlp_pretrain:
+                self.mlp.set_weights(self.mlp_pretrain)
+        if name == "neumf":
+            self.gmf = GMFLayer(self.n_user, self.n_items, self.n_factors)
+            self.mlp = MlpLayer(self.n_user, self.n_items, self.n_factors, self.layer_size)
+            if self.gmf_pretrain:
+                self.gmf.set_weights(self.gmf_pretrain)
+            if self.mlp_pretrain:
+                self.mlp.set_weights(self.mlp_pretrain)
+
+
+
+    def build(self, input_shape):
+        """
+        args
+        param input_shape: Shape of the input tensor.
+        """
+        super(Ncf, self).build(input_shape)
+        print("input_shape: ", input_shape)
+
 
     def call(self, inputs):
         """
         args
         param inputs: Input tensor of shape (batch_size, 2).
         """
-
-        model_options = ["gmf", "mlp", "neumf"]
-        if self.model_name not in model_options:
-            raise ValueError("The argument model is invalid, please input one of the following options: gmf, mlp, neumf")
-
         if self.model_name == "gmf":
             output = self.gmf(inputs)
         elif self.model_name == "mlp":
             output = self.mlp(inputs)
         elif self.model_name == "neumf":
-            gmf = self.gmf(inputs)
-            mlp = self.mlp(inputs)
-            concat = tf.concat([gmf, mlp], axis=1)
+            concat = tf.concat([self.gmf(inputs), self.mlp(inputs)], axis=1)
             output = tf.keras.layers.Dense(1, activation='sigmoid')(concat)
+        return tf.sigmoid(output)
+
+    def load_pretrain_weights(self, gmf_weights, mlp_weights):
+        pass
 
 
 
 
-        gmf = GMFLayer(self.n_user, self.n_items, self.n_factors)
-        mlp = MlpLayer(self.n_user, self.n_items, self.n_factors, self.layer_size)
-        gmf_out = gmf(inputs)
-        mlp_out = mlp(inputs)
-        concat = tf.concat([gmf_out, mlp_out], axis=1)
-        output = tf.keras.layers.Dense(1, activation='sigmoid')(concat)
-        return output
+if __name__ == "__main__":
+    ncf = Ncf(100, 100, 10, [10, 10], "neumf")
+    r = ncf(tf.constant([[1, 2], [3, 4]]))
+    print(r)
+
