@@ -61,7 +61,8 @@ def train(model, train, test, valid, metric, optimizer, loss_fn, epoches):
         train_loss = []
         for (batch, (user, item, label)) in enumerate(train):
             with tf.GradientTape() as tape:
-                logits = model([user, item])
+                input = tf.concat([user, item ], 1)
+                logits = model(input)
                 loss = loss_fn(label, logits)
             gradients = tape.gradient(loss, model.trainable_variables)
             optimizer.apply_gradients(zip(gradients, model.trainable_variables))

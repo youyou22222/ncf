@@ -1,4 +1,4 @@
-#coding:utf-8
+# coding:utf-8
 
 import os
 import sys
@@ -13,30 +13,23 @@ from ncf import Ncf
 # unit test
 if __name__ == "__main__":
     # test get_optimizier_instance
-    optimizer = get_optimizier_instance("adam", 0.01)
-    print(optimizer)
-    optimizer = get_optimizier_instance("sgd", 0.01)
-    print(optimizer)
-    optimizer = get_optimizier_instance("rmsprop", 0.01)
-    print(optimizer)
-    optimizer = get_optimizier_instance("adagrad", 0.01)
-    print(optimizer)
-    optimizer = get_optimizier_instance("adadelta", 0.01)
-    print(optimizer)
-    # test get_metric_instance
-    metric = get_metric_instance("auc")
-    print(metric)
+
+    # test data for model
+    # (user, item, label)
+
+    train_data = [
+        [
+        tf.constant([[0], [1], [2]]),
+        tf.constant([[1], [2], [3]]),
+        tf.constant([[1], [0], [1]])
+        ]
+    ]
+    optimizer = get_optimizier_instance(optimizer_name="adam", learning_rate=0.01)
+    loss_fn = LossLayer("logloss")
     metric = get_metric_instance("accuracy")
-    print(metric)
-    metric = get_metric_instance("precision")
-    print(metric)
-    metric = get_metric_instance("recall")
-    print(metric)
-    metric = get_metric_instance("mae")
-    print(metric)
-    metric = get_metric_instance("mse")
-    print(metric)
-    # test train
-    model = Ncf(10, 10, 10, [16,8,4])
-    train(model, None, None, None, None, None, None, 10)
-    print("unit test pass")
+    ncf_model = Ncf(n_user=3, n_items=10, n_factors=8, layer_size=[16, 8, 4])
+    train(train=train_data,
+          valid=None, test=None, model=ncf_model,
+          optimizer=optimizer,
+          loss_fn=loss_fn, metric=metric, epoches=10)
+    print(tf.__version__)
