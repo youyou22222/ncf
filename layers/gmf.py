@@ -8,17 +8,18 @@ from tensorflow.keras.layers import Layer
 from tensorflow.keras.layers import Embedding
 
 class GMFLayer(Layer):
-    def __init__(self, n_user, n_items, n_factors, name="gmf_layer"):
+    def __init__(self, n_user, n_items, n_factors, name="gmf_layer", trainable=True):
         """
         args
         param n_user: Number of users in Dataset
         param n_items: Number of items in Dataset
         param n_factors: Dimension of the latent embedding vectors.
         param name: Name of the GMF layer.
+        param trainable: Whether the layer is trainable.
         """
         super(GMFLayer, self).__init__(name=name)
-        self.embedding_gmf_user = Embedding(input_dim=n_user, output_dim=n_factors, name="embedding_gmf_user")
-        self.embedding_gmf_item = Embedding(input_dim=n_items, output_dim=n_factors, name="embedding_gmf_item")
+        self.embedding_gmf_user = Embedding(input_dim=n_user, output_dim=n_factors, name="embedding_gmf_user", trainable=trainable)
+        self.embedding_gmf_item = Embedding(input_dim=n_items, output_dim=n_factors, name="embedding_gmf_item", trainable=trainable)
 
     def build(self, input_shape):
         """

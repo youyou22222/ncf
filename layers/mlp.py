@@ -4,7 +4,7 @@ from tensorflow.keras.layers import Embedding
 
 
 class MlpLayer(Layer):
-    def __init__(self, n_user, n_items, n_factors, layer_size, name="mlp_layer"):
+    def __init__(self, n_user, n_items, n_factors, layer_size, name="mlp_layer", trainable=True):
         """
         args
         param n_user: Number of users in Dataset
@@ -15,8 +15,8 @@ class MlpLayer(Layer):
         """
         super(MlpLayer, self).__init__(name=name)
         self.layer_size = layer_size
-        self.embedding_mlp_user = Embedding(input_dim=n_user, output_dim=n_factors, name="embedding_mlp_user")
-        self.embedding_mlp_item = Embedding(input_dim=n_items, output_dim=n_factors, name="embedding_mlp_item")
+        self.embedding_mlp_user = Embedding(input_dim=n_user, output_dim=n_factors, name="embedding_mlp_user", trainable=trainable)
+        self.embedding_mlp_item = Embedding(input_dim=n_items, output_dim=n_factors, name="embedding_mlp_item", trainable=trainable)
 
     def build(self, input_shape):
         """

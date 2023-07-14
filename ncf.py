@@ -22,6 +22,10 @@ class Ncf(Model):
         param n_factors: Dimension of the latent embedding vectors.
         param layer_size: List of layer sizes for MLP.
         param name: Name of the NCF model.
+        param gmf_trainable: Whether the gmf embedding is trainable.
+        param mlp_trainable: Whether the mlp embedding is trainable.
+        param gmf_pretrain: Pretrain weights for gmf embedding,  model.load_weights.
+        param mlp_pretrain: Pretrain weights for mlp embedding, model.load_weights.
         """
         super(Ncf, self).__init__(name=name)
         self.n_user = n_user
@@ -40,16 +44,16 @@ class Ncf(Model):
                 "The argument model is invalid, please input one of the following options: gmf, mlp, neumf")
 
         if name == "gmf":
-            self.gmf = GMFLayer(self.n_user, self.n_items, self.n_factors)
+            self.gmf = GMFLayer(self.n_user, self.n_items, self.n_factors, trainable=self.gmf_trainable)
             if self.gmf_pretrain:
                 self.gmf.set_weights(self.gmf_pretrain)
         if name == "mlp":
-            self.mlp = MlpLayer(self.n_user, self.n_items, self.n_factors, self.layer_size)
+            self.mlp = MlpLayer(self.n_user, self.n_items, self.n_factors, self.layer_size, trainable=self.mlp_trainable)
             if self.mlp_pretrain:
                 self.mlp.set_weights(self.mlp_pretrain)
         if name == "neumf":
-            self.gmf = GMFLayer(self.n_user, self.n_items, self.n_factors)
-            self.mlp = MlpLayer(self.n_user, self.n_items, self.n_factors, self.layer_size)
+            self.gmf = GMFLayer(self.n_user, self.n_items, self.n_factors, trainable=self.gmf_trainable)
+            self.mlp = MlpLayer(self.n_user, self.n_items, self.n_factors, self.layer_size, trainable=self.mlp_trainable)
             if self.gmf_pretrain:
                 self.gmf.set_weights(self.gmf_pretrain)
             if self.mlp_pretrain:
@@ -79,11 +83,6 @@ class Ncf(Model):
             concat = tf.concat([self.gmf(inputs), self.mlp(inputs)], axis=1)
             output = tf.keras.layers.Dense(1, activation='sigmoid')(concat)
         return tf.sigmoid(output)
-
-    def load_pretrain_weights(self, gmf_weights, mlp_weights):
-        pass
-
-
 
 
 if __name__ == "__main__":
