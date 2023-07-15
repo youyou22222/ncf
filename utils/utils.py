@@ -16,7 +16,7 @@ from tensorflow.keras.optimizers import Adagrad
 from tensorflow.keras.optimizers import Adadelta
 
 
-def get_optimizier_instance(optimizer_name, learning_rate):
+def get_optimizer_instance(optimizer_name, learning_rate):
     """
     args
     param learning_rate: Learning rate of optimizer.
@@ -34,6 +34,7 @@ def get_optimizier_instance(optimizer_name, learning_rate):
     else:
         raise ValueError("optimizer_name must be adam, sgd, rmsprop, adagrad or adadelta")
     return optimizer
+
 
 def get_metric_instance(metric_name):
     """
@@ -55,13 +56,43 @@ def get_metric_instance(metric_name):
     else:
         raise ValueError("metric_name must be auc, accuracy, precision, recall, mae or mse")
     return metric
-def train(model, train, test, valid, metric, optimizer, loss_fn, epoches):
+
+
+def get_train_instances(train, num_negatives):
+    user_input, item_input, labels = [],[],[]
+    num_users, num_items = train.shape[0], train.shape[1]
+    keys = train.keys()
+    for (u, i) in train.keys():
+        # positive instance
+        user_input.append(u)
+        item_input.append(i)
+        labels.append(1)
+        # negative instances
+        for t in range(num_negatives):
+            j = np.random.randint(num_items)
+            while (u, j) in keys:
+                j = np.random.randint(num_items)
+            user_input.append(u)
+            item_input.append(j)
+            labels.append(0)
+    return user_input, item_input, labels
+
+
+def train(model, train, test, metric, optimizer, loss_fn, epoches, num_negatives=4):
     for epoch in range(epoches):
         start_time = time.time()
         train_loss = []
-        for (batch, (user, item, label)) in enumerate(train):
+        user_input, item_input, labels = get_train_instances(train, num_negatives)
+        dataset = tf.data.Dataset.from_tensor_slices(((user_input, item_input), labels))
+        dataset = dataset.shuffle(buffer_size=1000).batch(64)
+
+        for batch, data in enumerate(dataset):
             with tf.GradientTape() as tape:
-                input = tf.concat([user, item ], 1)
+                (user, item), label = data
+                user = tf.reshape(user, [user.shape[0], 1])
+                item = tf.reshape(item, [item.shape[0], 1])
+                label = tf.reshape(label, [label.shape[0], 1])
+                input, label = tf.concat([user, item], axis=1), tf.cast(label, dtype=tf.float32)
                 logits = model(input)
                 loss = loss_fn(label, logits)
             gradients = tape.gradient(loss, model.trainable_variables)
