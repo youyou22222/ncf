@@ -14,7 +14,7 @@ We use Tensorflow keras to implement our method. The version requirement is as f
 * python == 3.7.11
 
 ## 4. Example to run the codes.
-The instruction of commands has been clearly stated in the codes (see the  parse_args function).
+The instruction of commands has been clearly stated in the codes.
 ```angular2html
 python main.py 
 ```
