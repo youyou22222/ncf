@@ -53,7 +53,7 @@ class Ncf(Model):
                 self.mlp.set_weights(self.mlp_pretrain)
         if name == "neumf":
             self.gmf = GMFLayer(self.n_user, self.n_items, self.n_factors, trainable=self.gmf_trainable)
-            self.mlp = MlpLayer(self.n_user, self.n_items, self.n_factors, self.layer_size, trainable=self.mlp_trainable)
+            self.mlp = MlpLayer(self.n_user, self.n_items, self.n_factors//2, self.layer_size, trainable=self.mlp_trainable)
             if self.gmf_pretrain:
                 self.gmf.set_weights(self.gmf_pretrain)
             if self.mlp_pretrain:

@@ -1,0 +1,2 @@
+model_checkpoint_path: "neumf_weights"
+all_model_checkpoint_paths: "neumf_weights"

@@ -26,11 +26,11 @@ class LossLayer(Layer):
         """
         if self.loss_type == "logloss":
             # explicit feedback
-            loss = binary_crossentropy(inputs, outputs)
+            loss = binary_crossentropy(inputs, outputs, from_logits=False)
         elif self.loss_type == "mse":
             # implicit feedback
             #loss = mean(square(y_true - y_pred))
-            loss = mean_squared_error(inputs, outputs)
+            loss = mean_squared_error(inputs, outputs, from_logits=False)
         else:
             raise ValueError("loss_type must be logloss or mse")
 
